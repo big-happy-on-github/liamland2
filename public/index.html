@@ -1,49 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Netlify example: Serverless functions</title>
-    <link rel="stylesheet" href="/css/styles.css" />
+	<title>LIAMLAND 2</title>
+	<style>
+		body {
+			background-image: url('https://gardenandgun.com/wp-content/uploads/2024/02/Atlantic-Beach_Terry-Ward-1600x1200.jpg');
+			background-size: cover;
+			margin: 0;
+			overflow: hidden;
+		}
+
+		#gameCanvas {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			background-image: url('https://www.reddit.com/media?url=https%3A%2F%2Fpreview.redd.it%2Fmaking-an-old-pirate-map-what-should-i-include-v0-nx37kmso0lwc1.jpeg%3Fauto%3Dwebp%26s%3De324a90cae7569925f5913dd21d4400402ca1510');
+			background-size: cover;
+		}
+	</style>
 </head>
-
 <body>
-    <div class="container">
-        <h1>Example: Hello Netlify Functions</h1>
-        <p>
-            A hello world example of using Netlify Functions to add serverless functions to your project.
-        </p>
-        <p>
-            To add Netlify Functions, create a JavaScript, TypeScript, or Go function to your project in a <code>netlify/functions</code> directory. You can customize the address for your functions using Netlify's Redirects API
-        </p>
-        <h2>Examples</h2>
-        <ul>
-            <li><a href="/.netlify/functions/hello?name=you">Hello World</a> ( /.netlify/functions/hello?name=you )</li>
-            <li><a href="/api/hello?name=you">Hello World</a> ( /api/hello?name=you )</li>
-        </ul>
+	<canvas id="gameCanvas"></canvas>
+	<script>
+		const canvas = document.getElementById("gameCanvas");
+		const ctx = canvas.getContext("2d");
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
 
+		const enemies = [];
+		const towers = [];
 
-        <h2>More information</h2>
-        <ul>
-            <li><a href="https://www.netlify.com/products/functions/?utm_campaign=dx-examples&utm_source=example-site&utm_medium=web&utm_content=example-hello-functions">About Netlify Functions</a></li>
-            <li><a href="https://docs.netlify.com/functions/overview/?utm_campaign=dx-examples&utm_source=example-site&utm_medium=web&utm_content=example-hello-functions">Docs: Netlify Functions</a></li>
-            <li><a href="https://docs.netlify.com/functions/logs/?utm_campaign=dx-examples&utm_source=example-site&utm_medium=web&utm_content=example-hello-functions">Accessing your function logs</a></li>
-            <li><a href="https://functions.netlify.com/?utm_campaign=dx-examples&utm_source=example-site&utm_medium=web&utm_content=example-hello-functions">Learn serverless in the functions playground</a></li>
-        </ul>
+		class Enemy {
+			constructor(imageSrc, x, y, health) {
+				this.image = new Image();
+				this.image.src = imageSrc;
+				this.x = x;
+				this.y = y;
+				this.health = health;
+				this.loaded = false;
+				this.image.onload = () => { this.loaded = true; };
+			}
 
-        <h2>Deploy your own</h2>
-        <p>
-            A great place to start is to clone and deploy your own copy of this example. You can do that by clicking the button below.
-        </p>
-        <p>
-            Try it! 👉
-            <a href="https://app.netlify.com/start/deploy?repository=https://github.com/netlify/example-hello-world-functions&utm_campaign=dx-examples"><img src="https://www.netlify.com/img/deploy/button.svg" class="dtn" alt="Deploy to Netlify"></a>
-        </p>
+			draw() {
+				if (this.loaded) {
+					ctx.drawImage(this.image, this.x, this.y, 50, 50);
+				}
+			}
+		}
 
-        <p><small>Clicking the button will clone <a href="https://github.com/netlify/example-hello-world-functions">this repo</a> and deploy it as a new site on <a href="https://netlify.com/?utm_campaign=dx-examples">Netlify</a></small></p>
-    </div>
+		class Tower {
+			constructor(imageSrc, x, y) {
+				this.image = new Image();
+				this.image.src = imageSrc;
+				this.x = x;
+				this.y = y;
+				this.loaded = false;
+				this.image.onload = () => { this.loaded = true; };
+			}
 
+			draw() {
+				if (this.loaded) {
+					ctx.drawImage(this.image, this.x, this.y, 50, 50);
+				}
+			}
+		}
+
+		function gameLoop() {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			enemies.forEach(enemy => enemy.draw());
+			towers.forEach(tower => tower.draw());
+			requestAnimationFrame(gameLoop);
+		}
+
+		// Example enemy and tower
+		const eldritchBoss = new Enemy('https://static.wikia.nocookie.net/monster/images/d/dd/Cthulhu_Great_Old_One_image.jpg/revision/latest?cb=20170731191843', 100, 100, 500);
+		const einsteinTower = new Tower('data:image/webp;base64,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', 200, 200);
+
+		enemies.push(eldritchBoss);
+		towers.push(einsteinTower);
+
+		gameLoop();
+	</script>
 </body>
-
 </html>
